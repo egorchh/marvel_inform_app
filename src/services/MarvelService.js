@@ -1,43 +1,44 @@
-// Класс на чистом JS
+import { useHttp } from "../hooks/http.hook";
 
-class MarvelService {
-  _apiBase = "https://gateway.marvel.com:443/v1/public/";
-  _apiKey = "apikey=fd6aa250932e6506a5ae7e1e32a5bdb4";
+const useMarvelService = () => {
+  const { loading, request, error, clearError } = useHttp();
+
+  const _apiBase = "https://gateway.marvel.com:443/v1/public/";
+  const _apiKey = "apikey=fd6aa250932e6506a5ae7e1e32a5bdb4";
+  const _baseOffset = 367;
 
   // функция позволяющая принимать данные с API и возвращать данные
 
-  getResource = async (url) => {
-    let res = await fetch(url);
-
-    if (!res.ok) {
-      throw new Error(`Could not fetch ${url}, status ${res.status}`);
-    }
-
-    return await res.json();
-  };
-
   // Создание списка персонажей с лимитом в 9
 
-  getAllCharacters = async () => {
-    const res = await this.getResource(
-      `${this._apiBase}characters?limit=9&offset=452&${this._apiKey}`
+  const getAllCharacters = async (offset = _baseOffset) => {
+    const res = await request(
+      `${_apiBase}characters?limit=9&offset=${offset}&${_apiKey}`
     );
 
-    return res.data.results.map(this._transformCharacter);
+    return res.data.results.map(_transformCharacter);
   };
 
   // Создание конкретного перса
 
-  getCharacter = async (id) => {
-    const res = await this.getResource(
-      `${this._apiBase}characters/${id}?${this._apiKey}`
+  const getCharacter = async (id) => {
+    const res = await request(`${_apiBase}characters/${id}?${_apiKey}`);
+    return _transformCharacter(res.data.results[0]);
+  };
+
+  // Получение списка комиксов с лимитом в 8
+
+  const getAllComics = async (offset) => {
+    const res = await request(
+      `${_apiBase}comics?limit=8&offset=${offset}&${_apiKey}`
     );
-    return this._transformCharacter(res.data.results[0]);
+
+    return res.data.results.map(_transformComics);
   };
 
   // метод для трансформации данных
 
-  _transformCharacter = (char) => {
+  const _transformCharacter = (char) => {
     return {
       id: char.id,
       name: char.name,
@@ -50,6 +51,29 @@ class MarvelService {
       comics: char.comics.items.slice(0, 10),
     };
   };
-}
 
-export default MarvelService;
+  const _transformComics = (comics) => {
+    return {
+      id: comics.id,
+      title: comics.title,
+      thumbnail: `${comics.thumbnail.path}.${comics.thumbnail.extension}`,
+      description: comics.description || "There is no description",
+      price: comics.prices.price ? `${comics.prices.price}$` : "not available",
+      language: comics.textObjects.language || "en-us",
+      pageCount: comics.pageCount
+        ? `${comics.pageCount} p.`
+        : "No information about the number of pages",
+    };
+  };
+
+  return {
+    loading,
+    error,
+    clearError,
+    getAllCharacters,
+    getCharacter,
+    getAllComics,
+  };
+};
+
+export default useMarvelService;
