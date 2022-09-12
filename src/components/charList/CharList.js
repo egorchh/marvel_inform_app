@@ -1,12 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
 
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
-import Spinner from "../spinner/Spinner";
-import ErrorMessage from "../errorMessage/ErrorMessage";
 import useMarvelService from "../../services/MarvelService";
 import "./charList.scss";
+import setListContent from "../../utils/setListContent";
 
 const CharList = (props) => {
   const [charList, setCharList] = useState([]);
@@ -14,15 +13,18 @@ const CharList = (props) => {
   const [offset, setOffset] = useState(210);
   const [charEnded, setCharEnded] = useState(false);
 
-  const { loading, error, getAllCharacters } = useMarvelService();
+  const { getAllCharacters, process, setProcess } = useMarvelService();
 
   useEffect(() => {
     onRequest(offset, true);
+    // eslint-disable-next-line
   }, []);
 
   const onRequest = (offset, initiall) => {
     setNewItemLoading(!initiall);
-    getAllCharacters(offset).then(onCharListLoaded);
+    getAllCharacters(offset)
+      .then(onCharListLoaded)
+      .then(() => setProcess("confirmed"));
   };
 
   const onCharListLoaded = (newCharList) => {
@@ -89,16 +91,14 @@ const CharList = (props) => {
     );
   }
 
-  const items = renderItems(charList);
-
-  const errorMessage = error ? <ErrorMessage /> : null;
-  const spinner = loading && !newItemLoading ? <Spinner /> : null;
+  const elements = useMemo(() => {
+    return setListContent(process, () => renderItems(charList), newItemLoading);
+    // eslint-disable-next-line
+  }, [process]);
 
   return (
     <div className="char__list">
-      {errorMessage}
-      {spinner}
-      {items}
+      {elements}
       <button
         className="button button__main button__long"
         disabled={newItemLoading}
