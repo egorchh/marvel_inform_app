@@ -5,8 +5,10 @@ import useMarvelService from "../../services/MarvelService";
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import Skeleton from "../skeleton/Skeleton";
+import CharFinder from "../charFinder/CharFinder";
 
 import "./charInfo.scss";
+import { Link } from "react-router-dom";
 
 const CharInfo = (props) => {
   const [char, setChar] = useState(null);
@@ -37,17 +39,21 @@ const CharInfo = (props) => {
   const content = !(loading || error || !char) ? <View char={char} /> : null;
 
   return (
-    <div className="char__info">
-      {skeleton}
-      {errorMessage}
-      {spinner}
-      {content}
-    </div>
+    <>
+      <div className="char__info">
+        {skeleton}
+        {errorMessage}
+        {spinner}
+        {content}
+      </div>
+    </>
   );
 };
 
 const View = ({ char }) => {
   const { name, description, thumbnail, homepage, wiki, comics } = char;
+
+  console.log(comics);
 
   let imgStyle = { objectFit: "cover" };
   if (
@@ -81,9 +87,16 @@ const View = ({ char }) => {
           // eslint-disable-next-line
           if (i > 9) return;
           return (
-            <li key={i} className="char__comics-item">
+            <Link
+              key={i}
+              className="char__comics-item"
+              to={item.resourceURI.replace(
+                "http://gateway.marvel.com/v1/public/",
+                ""
+              )}
+            >
               {item.name}
-            </li>
+            </Link>
           );
         })}
       </ul>

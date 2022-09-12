@@ -1,10 +1,15 @@
-const Spinner = () => {
+const Spinner = ({ width, height, marginTop }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      style={{ margin: "0 auto", background: "none", display: "block" }}
-      width="100px"
-      height="100px"
+      style={{
+        margin: "0 auto",
+        marginTop: `${marginTop}`,
+        background: "none",
+        display: "block",
+      }}
+      width={width || "100px"}
+      height={height || "100px"}
       viewBox="0 0 100 100"
       preserveAspectRatio="xMidYMid"
     >

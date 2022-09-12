@@ -26,6 +26,13 @@ const useMarvelService = () => {
     return _transformCharacter(res.data.results[0]);
   };
 
+  const getCharacterByName = async (charName) => {
+    const res = await request(
+      `${_apiBase}characters?name=${charName}&${_apiKey}`
+    );
+    return res.data.results.map(_transformCharacter);
+  };
+
   // Получение списка комиксов с лимитом в 8
 
   const getAllComics = async (offset) => {
@@ -34,6 +41,13 @@ const useMarvelService = () => {
     );
 
     return res.data.results.map(_transformComics);
+  };
+
+  // Получение конкретного комикса
+
+  const getComic = async (id) => {
+    const res = await request(`${_apiBase}comics/${id}?${_apiKey}`);
+    return _transformComics(res.data.results[0]);
   };
 
   // метод для трансформации данных
@@ -61,7 +75,7 @@ const useMarvelService = () => {
       price: comics.prices.price ? `${comics.prices.price}$` : "not available",
       language: comics.textObjects.language || "en-us",
       pageCount: comics.pageCount
-        ? `${comics.pageCount} p.`
+        ? `${comics.pageCount} pages`
         : "No information about the number of pages",
     };
   };
@@ -73,6 +87,8 @@ const useMarvelService = () => {
     getAllCharacters,
     getCharacter,
     getAllComics,
+    getComic,
+    getCharacterByName,
   };
 };
 
